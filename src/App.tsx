@@ -15,10 +15,8 @@ function App() {
 
   useEffect(() => {
     const id = setInterval(() => {
-      if (playing)
-        setGain((g) => g + 10)
-      // TODO: change to binary search 
-      console.log("tick", gain, playing)
+      // TODO: binary search
+      setGain((g) => g + 10)
     }, 1000
     );
 
@@ -42,12 +40,10 @@ function App() {
           Learn React
         </a>
         <button onClick={() => {
-          console.log("pre", gain, playing)
-          if (!playing) {
-            setGain(0);
-          }
-          toggle();
-          console.log("post", playing, gain)
+          setGain(0);
+          setTimeout(() => {
+            toggle();
+          }, 150)
         }}>Toggle</button>
       </header>
     </div >
