@@ -1,12 +1,31 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
-import { Frequency, useFrequency } from 'react-frequency';
+import { useFrequency } from 'react-frequency';
+
 
 function App() {
-  const { toggle, start, stop, playing } = useFrequency({
-    hz: 2137
+  const [gain, setGain] = useState(0);
+  const { toggle, playing } = useFrequency({
+    hz: 2137,
+    type: "right",
+    oscillator: "sine",
+    gain: gain / 100,
   });
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (playing)
+        setGain((g) => g + 10)
+      // TODO: change to binary search 
+      console.log("tick", gain, playing)
+    }, 1000
+    );
+
+    return () => {
+      clearInterval(id);
+    };
+  }, []);
   return (
     <div className="App">
       <header className="App-header">
@@ -23,7 +42,12 @@ function App() {
           Learn React
         </a>
         <button onClick={() => {
-          playing ? stop() : start();
+          console.log("pre", gain, playing)
+          if (!playing) {
+            setGain(0);
+          }
+          toggle();
+          console.log("post", playing, gain)
         }}>Toggle</button>
       </header>
     </div >
