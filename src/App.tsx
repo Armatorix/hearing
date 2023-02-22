@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import logo from './logo.svg';
-import './App.css';
-import { useFrequency } from 'react-frequency';
-import Hearing from './Hearing';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import { Switch } from '@mui/material';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import { useState } from 'react';
+import './App.css';
+import Hearing from './Hearing';
 
 
 function App() {
@@ -17,7 +15,7 @@ function App() {
         label={side}
         labelPlacement="bottom"
         onClick={() => {
-          setSide((old) => old == "left" ? "right" : "left")
+          setSide((old) => old === "left" ? "right" : "left")
         }}
       />
       <Hearing
@@ -29,3 +27,4 @@ function App() {
 }
 
 export default App;
+ 
