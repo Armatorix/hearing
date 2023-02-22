@@ -22,6 +22,7 @@ const Hearing = (props: { freq: number; side: 'right' | 'left' }) => {
   }, [])
   return (
     <Button
+      variant="outlined"
       onClick={() => {
         setGain(0)
         setTimeout(() => {
