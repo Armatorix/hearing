@@ -1,11 +1,12 @@
 import {
   AppBar,
   Box,
-  Button,
   Container,
+  LinearProgress,
   Toolbar,
   Typography,
 } from '@mui/material'
+import { Stack } from '@mui/system'
 import { useState } from 'react'
 import './App.css'
 import Hearing from './Hearing'
@@ -24,6 +25,8 @@ function AppContent() {
       ? FREQS[results.length - FREQS.length]
       : FREQS[results.length]
   const side = results.length >= FREQS.length ? SIDES[0] : SIDES[1]
+  const buffer = 100 / (FREQS.length * SIDES.length)
+  const progress = (100 * results.length) / (FREQS.length * SIDES.length)
   if (results.length === FREQS.length * SIDES.length) {
     console.log(results)
     const data: Array<Datapoint> = []
@@ -37,13 +40,26 @@ function AppContent() {
     return <Results data={data} />
   }
   return (
-    <Hearing
-      freq={freq}
-      side={side}
-      submit={(v: number) => {
-        setResults((old) => [...old, v])
-      }}
-    />
+    <Stack>
+      <Stack>
+        <LinearProgress
+          variant="buffer"
+          value={progress}
+          valueBuffer={progress + buffer}
+        />
+
+        <Typography variant="body2" color="text.secondary">{`${Math.round(
+          progress
+        )}%`}</Typography>
+      </Stack>
+      <Hearing
+        freq={freq}
+        side={side}
+        submit={(v: number) => {
+          setResults((old) => [...old, v])
+        }}
+      />
+    </Stack>
   )
 }
 function App() {
