@@ -31,7 +31,7 @@ const Hearing = (props: {
   //   }
   // }, [])
   return (
-    <Stack spacing={5} paddingTop={'2em'}>
+    <Stack spacing={5}>
       <Typography variant="h5">
         Ear: {props.side} Frequency: {props.freq} Hz{' '}
       </Typography>
