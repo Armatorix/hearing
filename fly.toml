@@ -1,4 +1,4 @@
-# fly.toml file generated for hearing on 2022-10-01T15:15:20+02:00
+# fly.toml file generated for hearing on 2023-02-28T14:45:58+01:00
 
 app = "hearing"
 kill_signal = "SIGINT"
@@ -6,7 +6,7 @@ kill_timeout = 5
 processes = []
 
 [env]
-    PORT = 8080
+  PORT = 8080
 
 [experimental]
   allowed_public_ports = []
