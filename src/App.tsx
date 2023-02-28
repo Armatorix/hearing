@@ -1,11 +1,10 @@
-import { AppBar, Container, Switch, Toolbar, Typography } from '@mui/material'
-import FormControlLabel from '@mui/material/FormControlLabel'
+import { AppBar, Container, Toolbar, Typography } from '@mui/material'
 import { useState } from 'react'
 import './App.css'
 import Hearing from './Hearing'
 
 function App() {
-  const [side, setSide] = useState('left' as 'left' | 'right')
+  const [side, setSide] = useState('right' as 'left' | 'right')
   return (
     <>
       <AppBar position="static">
@@ -13,17 +12,8 @@ function App() {
           <Typography variant="h4">Hearing monitor</Typography>
         </Toolbar>
       </AppBar>
-      <Container className="App" maxWidth="sm">
-        <FormControlLabel
-          value={side}
-          control={<Switch color="primary" />}
-          label={side}
-          labelPlacement="bottom"
-          onClick={() => {
-            setSide((old) => (old === 'left' ? 'right' : 'left'))
-          }}
-        />
-        <Hearing freq={7137} side={side} />
+      <Container className="App" maxWidth="md">
+        <Hearing freq={7137} side={side} submit={() => {}} />
       </Container>
     </>
   )
