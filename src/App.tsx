@@ -3,8 +3,20 @@ import { useState } from 'react'
 import './App.css'
 import Hearing from './Hearing'
 
+const FREQS = [
+  2000, 4000, 6000, 8000, 10000, 12000, 14000, 16000, 18000, 20000, 22000,
+]
+const SIDES = ['right', 'left'] as ('right' | 'left')[]
+
 function App() {
-  const [side, setSide] = useState('right' as 'left' | 'right')
+  const [results, setResults] = useState([] as number[])
+
+  const freq =
+    results.length >= FREQS.length
+      ? FREQS[results.length - FREQS.length]
+      : FREQS[results.length]
+  const side = results.length >= FREQS.length ? SIDES[0] : SIDES[1]
+
   return (
     <>
       <AppBar position="static">
@@ -13,7 +25,13 @@ function App() {
         </Toolbar>
       </AppBar>
       <Container className="App" maxWidth="md">
-        <Hearing freq={7137} side={side} submit={() => {}} />
+        <Hearing
+          freq={freq}
+          side={side}
+          submit={(v: number) => {
+            setResults((old) => [...old, v])
+          }}
+        />
       </Container>
     </>
   )

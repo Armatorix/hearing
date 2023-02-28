@@ -78,7 +78,13 @@ const Hearing = (props: {
         ))}
         <VolumeUp />
       </Stack>
-      <Button variant="outlined" onClick={() => {}}>
+      <Button
+        variant="outlined"
+        onClick={() => {
+          props.submit(gain)
+          setGain(0)
+        }}
+      >
         Next
       </Button>
     </Stack>
