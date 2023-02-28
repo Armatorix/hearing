@@ -29,7 +29,7 @@ function AppContent() {
     const data: Array<Datapoint> = []
     for (let i = 0; i < FREQS.length; i++) {
       data.push({
-        frequency: FREQS[i],
+        name: FREQS[i],
         right: results[i],
         left: results[i + FREQS.length],
       })
