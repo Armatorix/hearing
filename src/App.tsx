@@ -1,4 +1,4 @@
-import { AppBar, Container, Toolbar, Typography } from '@mui/material'
+import { AppBar, Button, Container, Toolbar, Typography } from '@mui/material'
 import { useState } from 'react'
 import './App.css'
 import Hearing from './Hearing'
@@ -16,7 +16,10 @@ function App() {
       ? FREQS[results.length - FREQS.length]
       : FREQS[results.length]
   const side = results.length >= FREQS.length ? SIDES[0] : SIDES[1]
-
+  if (results.length === FREQS.length * SIDES.length) {
+    console.log(results)
+    return <Button>XD</Button>
+  }
   return (
     <>
       <AppBar position="static">
