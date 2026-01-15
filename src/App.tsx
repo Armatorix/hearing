@@ -1,12 +1,3 @@
-import {
-  AppBar,
-  Box,
-  Container,
-  LinearProgress,
-  Toolbar,
-  Typography,
-} from '@mui/material'
-import { Stack } from '@mui/system'
 import { useState } from 'react'
 import './App.css'
 import Hearing from './Hearing'
@@ -25,8 +16,8 @@ function AppContent() {
       ? FREQS[results.length - FREQS.length]
       : FREQS[results.length]
   const side = results.length >= FREQS.length ? SIDES[0] : SIDES[1]
-  const buffer = 100 / (FREQS.length * SIDES.length)
   const progress = (100 * results.length) / (FREQS.length * SIDES.length)
+  
   if (results.length === FREQS.length * SIDES.length) {
     console.log(results)
     const data: Array<Datapoint> = []
@@ -39,27 +30,20 @@ function AppContent() {
     }
     return <Results data={data} />
   }
+  
   return (
-    <Stack spacing={3}>
-      <Stack className="progress-section" spacing={1}>
-        <LinearProgress
-          variant="buffer"
-          value={progress}
-          valueBuffer={progress + buffer}
-          sx={{
-            height: 10,
-            borderRadius: 5,
-            backgroundColor: 'rgba(102, 126, 234, 0.2)',
-            '& .MuiLinearProgress-bar': {
-              borderRadius: 5,
-              backgroundImage: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            },
-          }}
-        />
-        <Typography variant="h6" sx={{ fontWeight: 600, color: '#667eea' }}>
+    <div className="space-y-6">
+      <div className="progress-section space-y-2">
+        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <p className="text-lg font-semibold text-primary-600">
           {`${Math.round(progress)}% Complete`}
-        </Typography>
-      </Stack>
+        </p>
+      </div>
       <div className="hearing-container">
         <Hearing
           freq={freq}
@@ -69,23 +53,24 @@ function AppContent() {
           }}
         />
       </div>
-    </Stack>
+    </div>
   )
 }
+
 function App() {
   return (
-    <>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h4">Hearing monitor</Typography>
-        </Toolbar>
-      </AppBar>
-      <Container className="App" maxWidth="md">
-        <Box paddingTop={'2em'}>
+    <div className="min-h-screen">
+      <nav className="bg-gradient-to-r from-primary-500 to-secondary-500 shadow-xl px-6 py-4">
+        <h1 className="text-2xl md:text-3xl font-bold text-white">
+          🎧 Hearing Monitor
+        </h1>
+      </nav>
+      <div className="container mx-auto max-w-4xl px-4">
+        <div className="app-container">
           <AppContent />
-        </Box>
-      </Container>
-    </>
+        </div>
+      </div>
+    </div>
   )
 }
 
