@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import Hearing from './Hearing'
-import Results, { Datapoint, SavedResult, saveResult, getHistory, clearHistory, deleteResult } from './Results'
+import Results, { Datapoint, SavedResult, saveResult, getHistory, clearHistory, deleteResult, exportHistory, importHistory } from './Results'
 
 const FREQS = [
   2000, 4000, 6000, 8000, 10000, 12000, 14000, 16000, 18000, 20000, 22000,
@@ -169,13 +169,29 @@ function AppContent() {
 
   // Show history
   if (viewMode === 'history') {
+    const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0]
+      if (!file) return
+      
+      try {
+        const result = await importHistory(file)
+        refreshHistory()
+        alert(`✅ Import complete!\n\nImported: ${result.imported} results\nSkipped: ${result.skipped} (duplicates or invalid)`)
+      } catch (err) {
+        alert(`❌ Import failed: ${err instanceof Error ? err.message : 'Unknown error'}`)
+      }
+      
+      // Reset input so same file can be selected again
+      e.target.value = ''
+    }
+
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
             📜 Test History
           </h2>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={() => {
                 setResults([])
@@ -186,6 +202,24 @@ function AppContent() {
             >
               ➕ New Test
             </button>
+            {history.length > 0 && (
+              <button
+                onClick={exportHistory}
+                className="px-4 py-2 border-2 border-primary-500 dark:border-primary-400 text-primary-500 dark:text-primary-400 font-semibold rounded-lg hover:bg-primary-500 hover:text-white dark:hover:bg-primary-600 transition-all duration-200"
+                title="Export all results to a JSON file"
+              >
+                📤 Export
+              </button>
+            )}
+            <label className="px-4 py-2 border-2 border-primary-500 dark:border-primary-400 text-primary-500 dark:text-primary-400 font-semibold rounded-lg hover:bg-primary-500 hover:text-white dark:hover:bg-primary-600 transition-all duration-200 cursor-pointer">
+              📥 Import
+              <input
+                type="file"
+                accept=".json,application/json"
+                onChange={handleImport}
+                className="hidden"
+              />
+            </label>
             {history.length > 0 && (
               <button
                 onClick={() => {
@@ -316,14 +350,12 @@ function AppContent() {
             {`${Math.round(progress)}% Complete`}
           </p>
         </div>
-        {history.length > 0 && (
-          <button
-            onClick={() => setViewMode('history')}
-            className="px-4 py-2 border-2 border-primary-500 dark:border-primary-400 text-primary-500 dark:text-primary-400 font-semibold rounded-lg hover:bg-primary-500 hover:text-white dark:hover:bg-primary-600 transition-all duration-200"
-          >
-            📜 History ({history.length})
-          </button>
-        )}
+        <button
+          onClick={() => setViewMode('history')}
+          className="px-4 py-2 border-2 border-primary-500 dark:border-primary-400 text-primary-500 dark:text-primary-400 font-semibold rounded-lg hover:bg-primary-500 hover:text-white dark:hover:bg-primary-600 transition-all duration-200"
+        >
+          📜 History{history.length > 0 && ` (${history.length})`}
+        </button>
       </div>
       <div className="hearing-container">
         <Hearing

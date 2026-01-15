@@ -55,6 +55,65 @@ export const deleteResult = (id: string): void => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(history))
 }
 
+export const exportHistory = (): void => {
+  const history = getHistory()
+  const data = JSON.stringify(history, null, 2)
+  const blob = new Blob([data], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `hearing-test-backup-${new Date().toISOString().split('T')[0]}.json`
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
+export const importHistory = (file: File): Promise<{ imported: number; skipped: number }> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string
+        const imported = JSON.parse(content) as SavedResult[]
+        
+        if (!Array.isArray(imported)) {
+          throw new Error('Invalid backup file format')
+        }
+        
+        const currentHistory = getHistory()
+        const existingIds = new Set(currentHistory.map(r => r.id))
+        
+        let importedCount = 0
+        let skippedCount = 0
+        
+        for (const result of imported) {
+          if (!result.id || !result.date || !result.data) {
+            skippedCount++
+            continue
+          }
+          if (existingIds.has(result.id)) {
+            skippedCount++
+            continue
+          }
+          currentHistory.push(result)
+          importedCount++
+        }
+        
+        // Sort by date descending
+        currentHistory.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(currentHistory))
+        
+        resolve({ imported: importedCount, skipped: skippedCount })
+      } catch (err) {
+        reject(err)
+      }
+    }
+    reader.onerror = () => reject(new Error('Failed to read file'))
+    reader.readAsText(file)
+  })
+}
+
 const HelpIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
     <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
