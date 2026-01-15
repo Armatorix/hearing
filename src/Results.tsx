@@ -20,29 +20,71 @@ type Datapoint = {
 const Results = (props: { data: Datapoint[] }) => {
   const { innerWidth: width, innerHeight: height } = window
   return (
-    <Stack spacing={4}>
-      <Typography variant="h5">
-        Results
+    <Stack spacing={4} className="results-container">
+      <Stack direction="row" alignItems="center" spacing={1}>
+        <Typography variant="h4" sx={{ fontWeight: 700, color: '#333' }}>
+          📊 Your Results
+        </Typography>
         <Tooltip
-          title="Lower value is better. Less volume was needed for you to hear the noice."
+          title="Lower values are better - they indicate less volume was needed for you to hear the sound."
           disableInteractive
         >
-          <IconButton>
+          <IconButton sx={{ color: '#667eea' }}>
             <HelpIcon />
           </IconButton>
         </Tooltip>
+      </Stack>
+      <Typography variant="body1" sx={{ color: '#555' }}>
+        Your hearing sensitivity across different frequencies. The chart shows how much volume was required for each frequency.
       </Typography>
-      <ResponsiveContainer width="100%" height={height / 2}>
-        <LineChart data={props.data}>
-          <XAxis dataKey="name" unit="Hz" name="Frequency" />
-          <YAxis unit="%" reversed />
-          <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
-          <ChartTooltip label="name" />
-          <Legend />
-          <Line type="monotone" dataKey="right" stroke="#8884d8" />
-          <Line type="monotone" dataKey="left" stroke="#82ca9d" />
-        </LineChart>
-      </ResponsiveContainer>
+      <div className="chart-container">
+        <ResponsiveContainer width="100%" height={height / 2}>
+          <LineChart data={props.data}>
+            <XAxis 
+              dataKey="name" 
+              unit="Hz" 
+              name="Frequency"
+              style={{ fontSize: '14px', fontWeight: 600 }}
+            />
+            <YAxis 
+              unit="%" 
+              reversed
+              style={{ fontSize: '14px', fontWeight: 600 }}
+            />
+            <CartesianGrid stroke="#e0e0e0" strokeDasharray="5 5" />
+            <ChartTooltip 
+              label="name"
+              contentStyle={{
+                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                border: '2px solid #667eea',
+                borderRadius: '8px',
+                fontWeight: 600,
+              }}
+            />
+            <Legend 
+              wrapperStyle={{ fontWeight: 600 }}
+            />
+            <Line 
+              type="monotone" 
+              dataKey="right" 
+              stroke="#667eea" 
+              strokeWidth={3}
+              name="Right Ear"
+              dot={{ fill: '#667eea', r: 5 }}
+              activeDot={{ r: 8 }}
+            />
+            <Line 
+              type="monotone" 
+              dataKey="left" 
+              stroke="#f5576c" 
+              strokeWidth={3}
+              name="Left Ear"
+              dot={{ fill: '#f5576c', r: 5 }}
+              activeDot={{ r: 8 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </Stack>
   )
 }

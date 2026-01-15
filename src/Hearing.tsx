@@ -31,22 +31,31 @@ const Hearing = (props: {
   //   }
   // }, [])
   return (
-    <Stack spacing={5}>
-      <Typography variant="h5">
-        Ear: {props.side} Frequency: {props.freq} Hz{' '}
-      </Typography>
-      <Typography>
-        Adjust slider till you{' '}
+    <Stack spacing={4}>
+      <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+        <Typography variant="h5" sx={{ fontWeight: 600, color: '#333' }}>
+          Testing:
+        </Typography>
+        <span className="ear-badge">
+          {props.side.toUpperCase()} EAR
+        </span>
+        <span className="frequency-badge">
+          {props.freq} Hz
+        </span>
+      </Stack>
+      <Typography variant="body1" sx={{ color: '#555', fontSize: '1.1rem' }}>
+        Adjust the slider until you{' '}
         <a
           href="https://img-9gag-fun.9cache.com/photo/ayL83Ly_700bwp.webp"
           target="_blank"
+          rel="noopener noreferrer"
         >
           bearly
         </a>{' '}
-        hear the noice.
+        hear the sound.
       </Typography>
-      <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
-        <VolumeDown />
+      <Stack spacing={2} direction="row" sx={{ mb: 2, mt: 2 }} alignItems="center">
+        <VolumeDown sx={{ color: '#667eea', fontSize: 32 }} />
         <Slider
           aria-label="Volume"
           min={0}
@@ -54,19 +63,37 @@ const Hearing = (props: {
           step={1}
           value={gain}
           valueLabelDisplay="on"
+          sx={{
+            '& .MuiSlider-valueLabel': {
+              backgroundColor: '#667eea',
+              fontWeight: 600,
+            },
+          }}
           onChange={(_: Event, newValue: number | number[]) => {
             start()
             setGain(newValue as number)
           }}
         />
-        <VolumeUp />
+        <VolumeUp sx={{ color: '#764ba2', fontSize: 32 }} />
       </Stack>
-      <Stack spacing={2} direction="row" sx={{ mb: 1 }} alignItems="center">
-        <VolumeDown />
-        {[-1, -5, -10, +1, +5, 10].map((v) => (
+      <Stack spacing={2} direction="row" sx={{ mb: 2 }} alignItems="center" flexWrap="wrap">
+        <Typography variant="body2" sx={{ fontWeight: 600, color: '#666', width: '100%' }}>
+          Fine tune:
+        </Typography>
+        {[-10, -5, -1, +1, +5, 10].map((v) => (
           <Button
             key={v + '-set-volume-btn'}
             variant="outlined"
+            size="small"
+            sx={{
+              borderColor: '#667eea',
+              color: '#667eea',
+              minWidth: '60px',
+              '&:hover': {
+                borderColor: '#764ba2',
+                backgroundColor: 'rgba(102, 126, 234, 0.08)',
+              },
+            }}
             onClick={() => {
               start()
               console.log(gain)
@@ -76,16 +103,26 @@ const Hearing = (props: {
             {v > 0 ? '+' + v : v}
           </Button>
         ))}
-        <VolumeUp />
       </Stack>
       <Button
-        variant="outlined"
+        variant="contained"
+        size="large"
+        fullWidth
+        sx={{
+          backgroundImage: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          fontWeight: 600,
+          padding: '12px',
+          fontSize: '1.1rem',
+          '&:hover': {
+            backgroundImage: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+          },
+        }}
         onClick={() => {
           props.submit(gain)
           setGain(0)
         }}
       >
-        Next
+        Next →
       </Button>
     </Stack>
   )

@@ -40,25 +40,35 @@ function AppContent() {
     return <Results data={data} />
   }
   return (
-    <Stack>
-      <Stack>
+    <Stack spacing={3}>
+      <Stack className="progress-section" spacing={1}>
         <LinearProgress
           variant="buffer"
           value={progress}
           valueBuffer={progress + buffer}
+          sx={{
+            height: 10,
+            borderRadius: 5,
+            backgroundColor: 'rgba(102, 126, 234, 0.2)',
+            '& .MuiLinearProgress-bar': {
+              borderRadius: 5,
+              backgroundImage: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            },
+          }}
         />
-
-        <Typography variant="body2" color="text.secondary">{`${Math.round(
-          progress
-        )}%`}</Typography>
+        <Typography variant="h6" sx={{ fontWeight: 600, color: '#667eea' }}>
+          {`${Math.round(progress)}% Complete`}
+        </Typography>
       </Stack>
-      <Hearing
-        freq={freq}
-        side={side}
-        submit={(v: number) => {
-          setResults((old) => [...old, v])
-        }}
-      />
+      <div className="hearing-container">
+        <Hearing
+          freq={freq}
+          side={side}
+          submit={(v: number) => {
+            setResults((old) => [...old, v])
+          }}
+        />
+      </div>
     </Stack>
   )
 }
