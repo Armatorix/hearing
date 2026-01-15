@@ -134,7 +134,7 @@ function AppContent({ viewMode, setViewMode }: AppContentProps) {
       setViewMode('results')
       refreshHistory()
     }
-  }, [results, audioLevel, device])
+  }, [results, audioLevel, device, setViewMode])
 
   // View a selected historical result
   if (viewMode === 'view-result' && selectedResult) {
@@ -150,13 +150,6 @@ function AppContent({ viewMode, setViewMode }: AppContentProps) {
         }}
       />
     )
-  }
-
-  // Reset test when starting new test
-  const handleNewTest = () => {
-    setResults([])
-    setCurrentResult(null)
-    setViewMode('setup')
   }
 
   // Show current test results
