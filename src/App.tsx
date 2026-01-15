@@ -410,6 +410,28 @@ function App() {
           <AppContent viewMode={viewMode} setViewMode={setViewMode} />
         </div>
       </div>
+      <footer className="py-6 text-center text-white/80 text-sm">
+        <p>
+          Created by{' '}
+          <a
+            href="https://me.wsokol.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white hover:text-white/90 underline"
+          >
+            Armatorix
+          </a>
+          {' '}•{' '}
+          <a
+            href="https://github.com/Armatorix/hearing"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-white hover:text-white/90 underline"
+          >
+            View on GitHub
+          </a>
+        </p>
+      </footer>
     </div>
   )
 }
