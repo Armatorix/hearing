@@ -20,6 +20,7 @@ export type SavedResult = {
   date: string
   data: Datapoint[]
   audioLevel?: number
+  device?: string
 }
 
 // Calculate a hearing score from 0-100 (higher is better)
@@ -46,17 +47,27 @@ export const getScoreInfo = (score: number): { label: string; colorClass: string
 
 const STORAGE_KEY = 'hearing-test-history'
 
-export const saveResult = (data: Datapoint[], audioLevel?: number): SavedResult => {
+export const saveResult = (data: Datapoint[], audioLevel?: number, device?: string): SavedResult => {
   const result: SavedResult = {
     id: Date.now().toString(),
     date: new Date().toISOString(),
     data,
     audioLevel,
+    device,
   }
   const history = getHistory()
   history.unshift(result)
   localStorage.setItem(STORAGE_KEY, JSON.stringify(history))
   return result
+}
+
+export const getDevices = (): string[] => {
+  const history = getHistory()
+  const devices = new Set<string>()
+  history.forEach(r => {
+    if (r.device) devices.add(r.device)
+  })
+  return Array.from(devices)
 }
 
 export const getHistory = (): SavedResult[] => {
@@ -142,18 +153,18 @@ const HelpIcon = () => (
   </svg>
 )
 
-const Results = (props: { data: Datapoint[]; date?: string; audioLevel?: number; onBack?: () => void }) => {
+const Results = (props: { data: Datapoint[]; date?: string; audioLevel?: number; device?: string; onBack?: () => void }) => {
   const { innerHeight: height } = window
   const score = calculateScore(props.data)
   const scoreInfo = getScoreInfo(score)
   
   return (
-    <div className="results-container space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center gap-3 flex-wrap">
         {props.onBack && (
           <button
             onClick={props.onBack}
-            className="p-2 text-primary-500 dark:text-primary-400 hover:text-secondary-500 dark:hover:text-secondary-400 transition-colors"
+            className="text-primary-500 dark:text-primary-400 hover:text-secondary-500 dark:hover:text-secondary-400 transition-colors"
             title="Back to history"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -177,6 +188,11 @@ const Results = (props: { data: Datapoint[]; date?: string; audioLevel?: number;
             🔊 System Volume: {props.audioLevel}%
           </span>
         )}
+        {props.device && (
+          <span className="px-3 py-1 bg-secondary-100 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 rounded-full text-sm font-semibold">
+            🎧 {props.device}
+          </span>
+        )}
         <div className="group relative">
           <button className="p-1 text-primary-500 dark:text-primary-400 hover:text-secondary-500 dark:hover:text-secondary-400 transition-colors">
             <HelpIcon />
@@ -192,7 +208,7 @@ const Results = (props: { data: Datapoint[]; date?: string; audioLevel?: number;
         Your hearing sensitivity across different frequencies. The chart shows how much volume was required for each frequency.
       </p>
       
-      <div className="chart-container">
+      <div>
         <ResponsiveContainer width="100%" height={height / 2}>
           <LineChart data={props.data}>
             <XAxis 

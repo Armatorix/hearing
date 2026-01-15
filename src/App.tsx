@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import Hearing from './Hearing'
-import Results, { Datapoint, SavedResult, saveResult, getHistory, clearHistory, deleteResult, exportHistory, importHistory, calculateScore, getScoreInfo } from './Results'
+import Results, { Datapoint, SavedResult, saveResult, getHistory, clearHistory, deleteResult, exportHistory, importHistory, calculateScore, getScoreInfo, getDevices } from './Results'
 
 const FREQS = [
   2000, 4000, 6000, 8000, 10000, 12000, 14000, 16000, 18000, 20000, 22000,
@@ -97,6 +97,12 @@ function AppContent() {
     const saved = localStorage.getItem('hearing-audio-level')
     return saved ? Number(saved) : 50
   })
+  const [device, setDevice] = useState<string>(() => {
+    const devices = getDevices()
+    return devices.length === 1 ? devices[0] : ''
+  })
+  const [showDeviceSuggestions, setShowDeviceSuggestions] = useState(false)
+  const availableDevices = getDevices()
 
   const refreshHistory = () => setHistory(getHistory())
 
@@ -118,12 +124,12 @@ function AppContent() {
           left: results[i + FREQS.length],
         })
       }
-      const saved = saveResult(data, audioLevel)
+      const saved = saveResult(data, audioLevel, device || undefined)
       setCurrentResult(saved)
       setViewMode('results')
       refreshHistory()
     }
-  }, [results, audioLevel])
+  }, [results, audioLevel, device])
 
   // View a selected historical result
   if (viewMode === 'view-result' && selectedResult) {
@@ -132,6 +138,7 @@ function AppContent() {
         data={selectedResult.data} 
         date={selectedResult.date}
         audioLevel={selectedResult.audioLevel}
+        device={selectedResult.device}
         onBack={() => {
           setSelectedResult(null)
           setViewMode('history')
@@ -144,7 +151,7 @@ function AppContent() {
   if (viewMode === 'results' && currentResult) {
     return (
       <div className="space-y-6">
-        <Results data={currentResult.data} audioLevel={currentResult.audioLevel} />
+        <Results data={currentResult.data} audioLevel={currentResult.audioLevel} device={currentResult.device} />
         <div className="flex flex-wrap gap-3 justify-center">
           <button
             onClick={() => {
@@ -242,7 +249,7 @@ function AppContent() {
             <p className="text-sm mt-2">Complete a hearing test to see your results here.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-[60vh] overflow-y-auto">
             {history.map((result) => (
               <div
                 key={result.id}
@@ -277,6 +284,11 @@ function AppContent() {
                     {result.audioLevel !== undefined && (
                       <span className="px-2 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded text-xs font-medium">
                         🔊 {result.audioLevel}%
+                      </span>
+                    )}
+                    {result.device && (
+                      <span className="px-2 py-0.5 bg-secondary-100 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 rounded text-xs font-medium">
+                        🎧 {result.device}
                       </span>
                     )}
                   </div>
@@ -347,6 +359,48 @@ function AppContent() {
         </div>
       )}
 
+      {/* Device Input - only show at start of test */}
+      {results.length === 0 && (
+        <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🎧</span>
+            <h3 className="font-semibold text-gray-800 dark:text-gray-100">
+              Device
+            </h3>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Enter the device you're using for this test (e.g., headphones model, earbuds, speakers).
+          </p>
+          <div className="relative">
+            <input
+              type="text"
+              value={device}
+              onChange={(e) => setDevice(e.target.value)}
+              onFocus={() => setShowDeviceSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowDeviceSuggestions(false), 150)}
+              placeholder="Enter device name..."
+              className="w-full px-4 py-2 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:border-primary-500 dark:focus:border-primary-400 focus:outline-none transition-colors"
+            />
+            {showDeviceSuggestions && availableDevices.length > 0 && (
+              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                {availableDevices
+                  .filter(d => d.toLowerCase().includes(device.toLowerCase()))
+                  .map((d) => (
+                    <button
+                      key={d}
+                      type="button"
+                      className="w-full px-4 py-2 text-left text-gray-800 dark:text-gray-100 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
+                      onMouseDown={() => setDevice(d)}
+                    >
+                      {d}
+                    </button>
+                  ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="progress-section space-y-2 flex-1">
           <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-3 overflow-hidden">
@@ -355,7 +409,7 @@ function AppContent() {
               style={{ width: `${progress}%` }}
             />
           </div>
-          <p className="text-lg font-semibold text-primary-600 dark:text-primary-400">
+          <p className="text-md font-semibold text-primary-600 dark:text-primary-400">
             {`${Math.round(progress)}% Complete`}
           </p>
         </div>
@@ -392,7 +446,7 @@ function App() {
           <ThemeToggle theme={theme} setTheme={setTheme} />
         </div>
       </nav>
-      <div className="container mx-auto max-w-4xl px-4">
+      <div className="container mx-auto max-w-4xl md:px-4">
         <div className="app-container">
           <AppContent />
         </div>

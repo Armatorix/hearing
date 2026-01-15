@@ -39,9 +39,6 @@
     @apply bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 p-8 rounded-xl shadow-md transition-colors duration-300;
   }
 
-  .results-container {
-    @apply bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 p-8 rounded-xl shadow-md transition-colors duration-300;
-  }
 
   .frequency-badge {
     @apply inline-block bg-gradient-to-r from-primary-500 to-secondary-500 text-white px-4 py-2 rounded-full font-semibold m-2;
@@ -49,10 +46,6 @@
 
   .ear-badge {
     @apply inline-block bg-gradient-to-r from-pink-400 to-red-500 text-white px-4 py-2 rounded-full font-semibold m-2;
-  }
-
-  .chart-container {
-    @apply bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md transition-colors duration-300;
   }
 }
 
@@ -62,6 +55,7 @@
       opacity: 0;
       transform: translateY(30px);
     }
+
     to {
       opacity: 1;
       transform: translateY(0);
