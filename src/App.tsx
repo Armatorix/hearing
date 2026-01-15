@@ -88,9 +88,14 @@ function ThemeToggle({ theme, setTheme }: { theme: Theme; setTheme: (t: Theme) =
 
 type ViewMode = 'setup' | 'test' | 'results' | 'history' | 'view-result'
 
-function AppContent() {
+interface AppContentProps {
+  onViewModeChange?: (mode: ViewMode) => void
+  viewMode: ViewMode
+  setViewMode: (mode: ViewMode) => void
+}
+
+function AppContent({ viewMode, setViewMode }: AppContentProps) {
   const [results, setResults] = useState([] as number[])
-  const [viewMode, setViewMode] = useState<ViewMode>('setup')
   const [history, setHistory] = useState<SavedResult[]>(() => getHistory())
   const [selectedResult, setSelectedResult] = useState<SavedResult | null>(null)
   const [currentResult, setCurrentResult] = useState<SavedResult | null>(null)
@@ -147,30 +152,17 @@ function AppContent() {
     )
   }
 
+  // Reset test when starting new test
+  const handleNewTest = () => {
+    setResults([])
+    setCurrentResult(null)
+    setViewMode('setup')
+  }
+
   // Show current test results
   if (viewMode === 'results' && currentResult) {
     return (
-      <div className="space-y-6">
-        <Results data={currentResult.data} audioLevel={currentResult.audioLevel} device={currentResult.device} />
-        <div className="flex flex-wrap gap-3 justify-center">
-          <button
-            onClick={() => {
-              setResults([])
-              setCurrentResult(null)
-              setViewMode('setup')
-            }}
-            className="px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
-          >
-            🔄 New Test
-          </button>
-          <button
-            onClick={() => setViewMode('history')}
-            className="px-6 py-3 border-2 border-primary-500 dark:border-primary-400 text-primary-500 dark:text-primary-400 font-semibold rounded-lg hover:bg-primary-500 hover:text-white dark:hover:bg-primary-600 transition-all duration-200"
-          >
-            📜 View History
-          </button>
-        </div>
-      </div>
+      <Results data={currentResult.data} audioLevel={currentResult.audioLevel} device={currentResult.device} />
     )
   }
 
@@ -199,16 +191,6 @@ function AppContent() {
             📜 Test History
           </h2>
           <div className="flex flex-wrap gap-2">
-            <button
-              onClick={() => {
-                setResults([])
-                setCurrentResult(null)
-                setViewMode('setup')
-              }}
-              className="px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-200"
-            >
-              ➕ New Test
-            </button>
             {history.length > 0 && (
               <button
                 onClick={exportHistory}
@@ -365,24 +347,16 @@ function AppContent() {
         </button>
       </div>
 
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="progress-section space-y-2 flex-1">
-          <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-3 overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          <p className="text-md font-semibold text-primary-600 dark:text-primary-400">
-            {`${Math.round(progress)}% Complete`}
-          </p>
+      <div className="progress-section space-y-2">
+        <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-3 overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full transition-all duration-300"
+            style={{ width: `${progress}%` }}
+          />
         </div>
-        <button
-          onClick={() => setViewMode('history')}
-          className="px-4 py-2 border-2 border-primary-500 dark:border-primary-400 text-primary-500 dark:text-primary-400 font-semibold rounded-lg hover:bg-primary-500 hover:text-white dark:hover:bg-primary-600 transition-all duration-200"
-        >
-          📜 History{history.length > 0 && ` (${history.length})`}
-        </button>
+        <p className="text-md font-semibold text-primary-600 dark:text-primary-400">
+          {`${Math.round(progress)}% Complete`}
+        </p>
       </div>
       <div className="hearing-container">
         <Hearing
@@ -399,20 +373,48 @@ function AppContent() {
 
 function App() {
   const { theme, setTheme } = useTheme()
+  const [viewMode, setViewMode] = useState<ViewMode>('setup')
 
   return (
-    <div className="min-h-screen">
-      <nav className="bg-gradient-to-r from-primary-500 to-secondary-500 dark:from-primary-700 dark:to-secondary-700 shadow-xl px-6 py-4 transition-colors duration-300">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl md:text-3xl font-bold text-white">
-            🎧 Hearing Monitor
+    <div className="">
+      <nav className="bg-gradient-to-r from-primary-500 to-secondary-500 dark:from-primary-700 dark:to-secondary-700 shadow-xl md:px-6 py-4 transition-colors duration-300">
+        <div className="flex items-center justify-between gap-4">
+          <div className='flex flex-row'>
+          <h1 className="text-xl md:text-3xl font-bold text-white">
+            🎧
           </h1>
-          <ThemeToggle theme={theme} setTheme={setTheme} />
+          <h1 className="text-xl md:text-3xl font-bold text-white hidden md:block">
+            Hearing Test
+          </h1>
+          </div>
+          <div className="flex items-center gap-2 md:gap-4">
+            <button
+              onClick={() => setViewMode('setup')}
+              className={`px-3 py-2 rounded-lg font-semibold text-sm md:text-base transition-all duration-200 ${
+                viewMode === 'setup' || viewMode === 'test' || viewMode === 'results'
+                  ? 'bg-white text-primary-600 shadow-md'
+                  : 'text-white/90 hover:bg-white/20'
+              }`}
+            >
+              🎯 New Test
+            </button>
+            <button
+              onClick={() => setViewMode('history')}
+              className={`px-3 py-2 rounded-lg font-semibold text-sm md:text-base transition-all duration-200 ${
+                viewMode === 'history' || viewMode === 'view-result'
+                  ? 'bg-white text-primary-600 shadow-md'
+                  : 'text-white/90 hover:bg-white/20'
+              }`}
+            >
+              📜 History
+            </button>
+            <ThemeToggle theme={theme} setTheme={setTheme} />
+          </div>
         </div>
       </nav>
-      <div className="container mx-auto max-w-4xl md:px-4">
-        <div className="app-container">
-          <AppContent />
+      <div className="container mx-auto max-w-xl md:px-4">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-2 md:p-8 mt-8 mb-8 animate-slide-up transition-colors duration-300">
+          <AppContent viewMode={viewMode} setViewMode={setViewMode} />
         </div>
       </div>
     </div>
