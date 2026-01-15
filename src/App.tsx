@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import './App.css'
+import AudioSetup from './AudioSetup'
 import Hearing from './Hearing'
 import Results, { Datapoint, SavedResult, saveResult, getHistory, clearHistory, deleteResult, exportHistory, importHistory, calculateScore, getScoreInfo, getDevices } from './Results'
 
@@ -85,11 +86,11 @@ function ThemeToggle({ theme, setTheme }: { theme: Theme; setTheme: (t: Theme) =
   )
 }
 
-type ViewMode = 'test' | 'results' | 'history' | 'view-result'
+type ViewMode = 'setup' | 'test' | 'results' | 'history' | 'view-result'
 
 function AppContent() {
   const [results, setResults] = useState([] as number[])
-  const [viewMode, setViewMode] = useState<ViewMode>('test')
+  const [viewMode, setViewMode] = useState<ViewMode>('setup')
   const [history, setHistory] = useState<SavedResult[]>(() => getHistory())
   const [selectedResult, setSelectedResult] = useState<SavedResult | null>(null)
   const [currentResult, setCurrentResult] = useState<SavedResult | null>(null)
@@ -101,7 +102,6 @@ function AppContent() {
     const devices = getDevices()
     return devices.length === 1 ? devices[0] : ''
   })
-  const [showDeviceSuggestions, setShowDeviceSuggestions] = useState(false)
   const availableDevices = getDevices()
 
   const refreshHistory = () => setHistory(getHistory())
@@ -157,7 +157,7 @@ function AppContent() {
             onClick={() => {
               setResults([])
               setCurrentResult(null)
-              setViewMode('test')
+              setViewMode('setup')
             }}
             className="px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
           >
@@ -203,7 +203,7 @@ function AppContent() {
               onClick={() => {
                 setResults([])
                 setCurrentResult(null)
-                setViewMode('test')
+                setViewMode('setup')
               }}
               className="px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-200"
             >
@@ -316,6 +316,20 @@ function AppContent() {
     )
   }
 
+  // Show audio setup screen
+  if (viewMode === 'setup') {
+    return (
+      <AudioSetup
+        audioLevel={audioLevel}
+        setAudioLevel={setAudioLevel}
+        device={device}
+        setDevice={setDevice}
+        availableDevices={availableDevices}
+        onStart={() => setViewMode('test')}
+      />
+    )
+  }
+
   // Show test in progress (skip if already complete)
   if (results.length === FREQS.length * SIDES.length) {
     return null // Will be handled by useEffect
@@ -323,83 +337,23 @@ function AppContent() {
   
   return (
     <div className="space-y-6">
-      {/* System Audio Level Slider - only show at start of test */}
-      {results.length === 0 && (
-        <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">🔊</span>
-            <h3 className="font-semibold text-gray-800 dark:text-gray-100">
-              System Audio Level
-            </h3>
-            <span className="ml-auto px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-sm font-semibold">
-              {audioLevel}%
-            </span>
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Set your system/device volume level for this test. This helps track conditions for comparison.
-          </p>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={1}
-            value={audioLevel}
-            onChange={(e) => {
-              const value = Number(e.target.value)
-              setAudioLevel(value)
-              localStorage.setItem('hearing-audio-level', value.toString())
-            }}
-            className="w-full h-3 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer accent-primary-500"
-          />
-          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
-            <span>0%</span>
-            <span>50%</span>
-            <span>100%</span>
-          </div>
-        </div>
-      )}
-
-      {/* Device Input - only show at start of test */}
-      {results.length === 0 && (
-        <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">🎧</span>
-            <h3 className="font-semibold text-gray-800 dark:text-gray-100">
-              Device
-            </h3>
-          </div>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Enter the device you're using for this test (e.g., headphones model, earbuds, speakers).
-          </p>
-          <div className="relative">
-            <input
-              type="text"
-              value={device}
-              onChange={(e) => setDevice(e.target.value)}
-              onFocus={() => setShowDeviceSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowDeviceSuggestions(false), 150)}
-              placeholder="Enter device name..."
-              className="w-full px-4 py-2 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 focus:border-primary-500 dark:focus:border-primary-400 focus:outline-none transition-colors"
-            />
-            {showDeviceSuggestions && availableDevices.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-40 overflow-y-auto">
-                {availableDevices
-                  .filter(d => d.toLowerCase().includes(device.toLowerCase()))
-                  .map((d) => (
-                    <button
-                      key={d}
-                      type="button"
-                      className="w-full px-4 py-2 text-left text-gray-800 dark:text-gray-100 hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors"
-                      onMouseDown={() => setDevice(d)}
-                    >
-                      {d}
-                    </button>
-                  ))}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Current test settings summary */}
+      <div className="flex flex-wrap gap-2 text-sm">
+        <span className="px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full font-medium">
+          🔊 Volume: {audioLevel}%
+        </span>
+        {device && (
+          <span className="px-3 py-1 bg-secondary-100 dark:bg-secondary-900/30 text-secondary-600 dark:text-secondary-400 rounded-full font-medium">
+            🎧 {device}
+          </span>
+        )}
+        <button
+          onClick={() => setViewMode('setup')}
+          className="px-3 py-1 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 rounded-full font-medium hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+        >
+          ⚙️ Settings
+        </button>
+      </div>
 
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="progress-section space-y-2 flex-1">
