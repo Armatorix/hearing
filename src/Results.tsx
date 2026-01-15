@@ -19,15 +19,17 @@ export type SavedResult = {
   id: string
   date: string
   data: Datapoint[]
+  audioLevel?: number
 }
 
 const STORAGE_KEY = 'hearing-test-history'
 
-export const saveResult = (data: Datapoint[]): SavedResult => {
+export const saveResult = (data: Datapoint[], audioLevel?: number): SavedResult => {
   const result: SavedResult = {
     id: Date.now().toString(),
     date: new Date().toISOString(),
     data,
+    audioLevel,
   }
   const history = getHistory()
   history.unshift(result)
@@ -59,7 +61,7 @@ const HelpIcon = () => (
   </svg>
 )
 
-const Results = (props: { data: Datapoint[]; date?: string; onBack?: () => void }) => {
+const Results = (props: { data: Datapoint[]; date?: string; audioLevel?: number; onBack?: () => void }) => {
   const { innerHeight: height } = window
   
   return (
@@ -82,6 +84,11 @@ const Results = (props: { data: Datapoint[]; date?: string; onBack?: () => void 
         {props.date && (
           <span className="text-sm text-gray-500 dark:text-gray-400">
             {new Date(props.date).toLocaleString()}
+          </span>
+        )}
+        {props.audioLevel !== undefined && (
+          <span className="px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-sm font-semibold">
+            🔊 System Volume: {props.audioLevel}%
           </span>
         )}
         <div className="group relative">

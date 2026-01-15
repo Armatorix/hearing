@@ -93,6 +93,10 @@ function AppContent() {
   const [history, setHistory] = useState<SavedResult[]>(() => getHistory())
   const [selectedResult, setSelectedResult] = useState<SavedResult | null>(null)
   const [currentResult, setCurrentResult] = useState<SavedResult | null>(null)
+  const [audioLevel, setAudioLevel] = useState<number>(() => {
+    const saved = localStorage.getItem('hearing-audio-level')
+    return saved ? Number(saved) : 50
+  })
 
   const refreshHistory = () => setHistory(getHistory())
 
@@ -114,12 +118,12 @@ function AppContent() {
           left: results[i + FREQS.length],
         })
       }
-      const saved = saveResult(data)
+      const saved = saveResult(data, audioLevel)
       setCurrentResult(saved)
       setViewMode('results')
       refreshHistory()
     }
-  }, [results])
+  }, [results, audioLevel])
 
   // View a selected historical result
   if (viewMode === 'view-result' && selectedResult) {
@@ -127,6 +131,7 @@ function AppContent() {
       <Results 
         data={selectedResult.data} 
         date={selectedResult.date}
+        audioLevel={selectedResult.audioLevel}
         onBack={() => {
           setSelectedResult(null)
           setViewMode('history')
@@ -139,7 +144,7 @@ function AppContent() {
   if (viewMode === 'results' && currentResult) {
     return (
       <div className="space-y-6">
-        <Results data={currentResult.data} />
+        <Results data={currentResult.data} audioLevel={currentResult.audioLevel} />
         <div className="flex flex-wrap gap-3 justify-center">
           <button
             onClick={() => {
@@ -224,8 +229,13 @@ function AppContent() {
                       day: 'numeric',
                     })}
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {new Date(result.date).toLocaleTimeString()}
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <span>{new Date(result.date).toLocaleTimeString()}</span>
+                    {result.audioLevel !== undefined && (
+                      <span className="px-2 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded text-xs font-medium">
+                        🔊 {result.audioLevel}%
+                      </span>
+                    )}
                   </div>
                 </button>
                 <button
@@ -258,6 +268,42 @@ function AppContent() {
   
   return (
     <div className="space-y-6">
+      {/* System Audio Level Slider - only show at start of test */}
+      {results.length === 0 && (
+        <div className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">🔊</span>
+            <h3 className="font-semibold text-gray-800 dark:text-gray-100">
+              System Audio Level
+            </h3>
+            <span className="ml-auto px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-sm font-semibold">
+              {audioLevel}%
+            </span>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Set your system/device volume level for this test. This helps track conditions for comparison.
+          </p>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={1}
+            value={audioLevel}
+            onChange={(e) => {
+              const value = Number(e.target.value)
+              setAudioLevel(value)
+              localStorage.setItem('hearing-audio-level', value.toString())
+            }}
+            className="w-full h-3 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer accent-primary-500"
+          />
+          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+            <span>0%</span>
+            <span>50%</span>
+            <span>100%</span>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="progress-section space-y-2 flex-1">
           <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-3 overflow-hidden">
