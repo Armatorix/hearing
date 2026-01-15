@@ -29,7 +29,7 @@ const Hearing = (props: {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-2">
-        <h2 className="text-xl font-semibold text-gray-800">
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
           Testing:
         </h2>
         <span className="ear-badge">
@@ -40,13 +40,13 @@ const Hearing = (props: {
         </span>
       </div>
       
-      <p className="text-gray-600 text-lg">
+      <p className="text-gray-600 dark:text-gray-300 text-lg">
         Adjust the slider until you{' '}
         <a
           href="https://img-9gag-fun.9cache.com/photo/ayL83Ly_700bwp.webp"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-primary-500 hover:text-secondary-500 font-semibold underline"
+          className="text-primary-500 dark:text-primary-400 hover:text-secondary-500 dark:hover:text-secondary-400 font-semibold underline"
         >
           bearly
         </a>{' '}
@@ -69,22 +69,22 @@ const Hearing = (props: {
               start()
               setGain(Number(e.target.value))
             }}
-            className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-500"
+            className="w-full h-3 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer accent-primary-500"
           />
         </div>
         <VolumeUpIcon />
       </div>
 
       <div className="space-y-3">
-        <p className="font-semibold text-gray-600">
+        <p className="font-semibold text-gray-600 dark:text-gray-300">
           Fine tune:
         </p>
         <div className="flex flex-wrap gap-2">
           {[-10, -5, -1, +1, +5, 10].map((v) => (
             <button
               key={v + '-set-volume-btn'}
-              className="px-4 py-2 border-2 border-primary-500 text-primary-500 rounded-lg font-semibold 
-                         hover:bg-primary-500 hover:text-white transition-all duration-200 
+              className="px-4 py-2 border-2 border-primary-500 dark:border-primary-400 text-primary-500 dark:text-primary-400 rounded-lg font-semibold 
+                         hover:bg-primary-500 hover:text-white dark:hover:bg-primary-600 transition-all duration-200 
                          hover:-translate-y-0.5 hover:shadow-md active:translate-y-0"
               onClick={() => {
                 start()

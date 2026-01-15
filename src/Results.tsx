@@ -27,21 +27,21 @@ const Results = (props: { data: Datapoint[] }) => {
   return (
     <div className="results-container space-y-6">
       <div className="flex items-center gap-3">
-        <h2 className="text-2xl font-bold text-gray-800">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
           📊 Your Results
         </h2>
         <div className="group relative">
-          <button className="p-1 text-primary-500 hover:text-secondary-500 transition-colors">
+          <button className="p-1 text-primary-500 dark:text-primary-400 hover:text-secondary-500 dark:hover:text-secondary-400 transition-colors">
             <HelpIcon />
           </button>
-          <div className="absolute left-0 top-full mt-2 w-64 p-3 bg-gray-800 text-white text-sm rounded-lg 
+          <div className="absolute left-0 top-full mt-2 w-64 p-3 bg-gray-800 dark:bg-gray-900 text-white text-sm rounded-lg 
                           opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 shadow-xl">
             Lower values are better - they indicate less volume was needed for you to hear the sound.
           </div>
         </div>
       </div>
       
-      <p className="text-gray-600">
+      <p className="text-gray-600 dark:text-gray-300">
         Your hearing sensitivity across different frequencies. The chart shows how much volume was required for each frequency.
       </p>
       
@@ -62,7 +62,8 @@ const Results = (props: { data: Datapoint[] }) => {
             <CartesianGrid stroke="#e0e0e0" strokeDasharray="5 5" />
             <ChartTooltip 
               contentStyle={{
-                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                backgroundColor: document.documentElement.classList.contains('dark') ? 'rgba(31, 41, 55, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                color: document.documentElement.classList.contains('dark') ? '#f3f4f6' : '#1f2937',
                 border: '2px solid #667eea',
                 borderRadius: '8px',
                 fontWeight: 600,
