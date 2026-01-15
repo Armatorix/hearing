@@ -353,6 +353,16 @@ function AppContent() {
         >
           ⚙️ Settings
         </button>
+        <button
+          onClick={() => {
+            if (window.confirm('Are you sure you want to restart the hearing test? All current progress will be lost.')) {
+              setResults([])
+            }
+          }}
+          className="px-3 py-1 border border-red-400 dark:border-red-500 text-red-500 dark:text-red-400 rounded-full font-medium hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+        >
+          🔄 Restart
+        </button>
       </div>
 
       <div className="flex items-center justify-between flex-wrap gap-3">
