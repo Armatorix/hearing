@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import Hearing from './Hearing'
-import Results, { Datapoint } from './Results'
+import Results, { Datapoint, SavedResult, saveResult, getHistory, clearHistory, deleteResult } from './Results'
 
 const FREQS = [
   2000, 4000, 6000, 8000, 10000, 12000, 14000, 16000, 18000, 20000, 22000,
@@ -85,8 +85,16 @@ function ThemeToggle({ theme, setTheme }: { theme: Theme; setTheme: (t: Theme) =
   )
 }
 
+type ViewMode = 'test' | 'results' | 'history' | 'view-result'
+
 function AppContent() {
   const [results, setResults] = useState([] as number[])
+  const [viewMode, setViewMode] = useState<ViewMode>('test')
+  const [history, setHistory] = useState<SavedResult[]>(() => getHistory())
+  const [selectedResult, setSelectedResult] = useState<SavedResult | null>(null)
+  const [currentResult, setCurrentResult] = useState<SavedResult | null>(null)
+
+  const refreshHistory = () => setHistory(getHistory())
 
   const freq =
     results.length >= FREQS.length
@@ -95,31 +103,181 @@ function AppContent() {
   const side = results.length >= FREQS.length ? SIDES[0] : SIDES[1]
   const progress = (100 * results.length) / (FREQS.length * SIDES.length)
   
-  if (results.length === FREQS.length * SIDES.length) {
-    console.log(results)
-    const data: Array<Datapoint> = []
-    for (let i = 0; i < FREQS.length; i++) {
-      data.push({
-        name: FREQS[i],
-        right: results[i],
-        left: results[i + FREQS.length],
-      })
+  // When test is complete, save and show results
+  useEffect(() => {
+    if (results.length === FREQS.length * SIDES.length) {
+      const data: Array<Datapoint> = []
+      for (let i = 0; i < FREQS.length; i++) {
+        data.push({
+          name: FREQS[i],
+          right: results[i],
+          left: results[i + FREQS.length],
+        })
+      }
+      const saved = saveResult(data)
+      setCurrentResult(saved)
+      setViewMode('results')
+      refreshHistory()
     }
-    return <Results data={data} />
+  }, [results])
+
+  // View a selected historical result
+  if (viewMode === 'view-result' && selectedResult) {
+    return (
+      <Results 
+        data={selectedResult.data} 
+        date={selectedResult.date}
+        onBack={() => {
+          setSelectedResult(null)
+          setViewMode('history')
+        }}
+      />
+    )
+  }
+
+  // Show current test results
+  if (viewMode === 'results' && currentResult) {
+    return (
+      <div className="space-y-6">
+        <Results data={currentResult.data} />
+        <div className="flex flex-wrap gap-3 justify-center">
+          <button
+            onClick={() => {
+              setResults([])
+              setCurrentResult(null)
+              setViewMode('test')
+            }}
+            className="px-6 py-3 bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-200"
+          >
+            🔄 New Test
+          </button>
+          <button
+            onClick={() => setViewMode('history')}
+            className="px-6 py-3 border-2 border-primary-500 dark:border-primary-400 text-primary-500 dark:text-primary-400 font-semibold rounded-lg hover:bg-primary-500 hover:text-white dark:hover:bg-primary-600 transition-all duration-200"
+          >
+            📜 View History
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // Show history
+  if (viewMode === 'history') {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
+            📜 Test History
+          </h2>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setResults([])
+                setCurrentResult(null)
+                setViewMode('test')
+              }}
+              className="px-4 py-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-semibold rounded-lg hover:shadow-lg transition-all duration-200"
+            >
+              ➕ New Test
+            </button>
+            {history.length > 0 && (
+              <button
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to clear all history?')) {
+                    clearHistory()
+                    refreshHistory()
+                  }
+                }}
+                className="px-4 py-2 border-2 border-red-500 text-red-500 font-semibold rounded-lg hover:bg-red-500 hover:text-white transition-all duration-200"
+              >
+                🗑️ Clear All
+              </button>
+            )}
+          </div>
+        </div>
+        
+        {history.length === 0 ? (
+          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+            <p className="text-lg">No test history yet.</p>
+            <p className="text-sm mt-2">Complete a hearing test to see your results here.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {history.map((result) => (
+              <div
+                key={result.id}
+                className="flex items-center justify-between p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
+              >
+                <button
+                  onClick={() => {
+                    setSelectedResult(result)
+                    setViewMode('view-result')
+                  }}
+                  className="flex-1 text-left"
+                >
+                  <div className="font-semibold text-gray-800 dark:text-gray-100">
+                    {new Date(result.date).toLocaleDateString(undefined, {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    {new Date(result.date).toLocaleTimeString()}
+                  </div>
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (window.confirm('Delete this result?')) {
+                      deleteResult(result.id)
+                      refreshHistory()
+                    }
+                  }}
+                  className="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                  title="Delete"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Show test in progress (skip if already complete)
+  if (results.length === FREQS.length * SIDES.length) {
+    return null // Will be handled by useEffect
   }
   
   return (
     <div className="space-y-6">
-      <div className="progress-section space-y-2">
-        <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-3 overflow-hidden">
-          <div 
-            className="h-full bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <div className="progress-section space-y-2 flex-1">
+          <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-3 overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <p className="text-lg font-semibold text-primary-600 dark:text-primary-400">
+            {`${Math.round(progress)}% Complete`}
+          </p>
         </div>
-        <p className="text-lg font-semibold text-primary-600 dark:text-primary-400">
-          {`${Math.round(progress)}% Complete`}
-        </p>
+        {history.length > 0 && (
+          <button
+            onClick={() => setViewMode('history')}
+            className="px-4 py-2 border-2 border-primary-500 dark:border-primary-400 text-primary-500 dark:text-primary-400 font-semibold rounded-lg hover:bg-primary-500 hover:text-white dark:hover:bg-primary-600 transition-all duration-200"
+          >
+            📜 History ({history.length})
+          </button>
+        )}
       </div>
       <div className="hearing-container">
         <Hearing

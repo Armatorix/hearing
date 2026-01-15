@@ -15,21 +15,75 @@ type Datapoint = {
   left: number
 }
 
+export type SavedResult = {
+  id: string
+  date: string
+  data: Datapoint[]
+}
+
+const STORAGE_KEY = 'hearing-test-history'
+
+export const saveResult = (data: Datapoint[]): SavedResult => {
+  const result: SavedResult = {
+    id: Date.now().toString(),
+    date: new Date().toISOString(),
+    data,
+  }
+  const history = getHistory()
+  history.unshift(result)
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(history))
+  return result
+}
+
+export const getHistory = (): SavedResult[] => {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    return stored ? JSON.parse(stored) : []
+  } catch {
+    return []
+  }
+}
+
+export const clearHistory = (): void => {
+  localStorage.removeItem(STORAGE_KEY)
+}
+
+export const deleteResult = (id: string): void => {
+  const history = getHistory().filter(r => r.id !== id)
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(history))
+}
+
 const HelpIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
     <path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
   </svg>
 )
 
-const Results = (props: { data: Datapoint[] }) => {
+const Results = (props: { data: Datapoint[]; date?: string; onBack?: () => void }) => {
   const { innerHeight: height } = window
   
   return (
     <div className="results-container space-y-6">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 flex-wrap">
+        {props.onBack && (
+          <button
+            onClick={props.onBack}
+            className="p-2 text-primary-500 dark:text-primary-400 hover:text-secondary-500 dark:hover:text-secondary-400 transition-colors"
+            title="Back to history"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            </svg>
+          </button>
+        )}
         <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-          📊 Your Results
+          📊 {props.date ? 'Past Results' : 'Your Results'}
         </h2>
+        {props.date && (
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            {new Date(props.date).toLocaleString()}
+          </span>
+        )}
         <div className="group relative">
           <button className="p-1 text-primary-500 dark:text-primary-400 hover:text-secondary-500 dark:hover:text-secondary-400 transition-colors">
             <HelpIcon />
