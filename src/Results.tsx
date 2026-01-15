@@ -22,6 +22,28 @@ export type SavedResult = {
   audioLevel?: number
 }
 
+// Calculate a hearing score from 0-100 (higher is better)
+// Based on average sensitivity across all frequencies and ears
+// Lower volume needed = better hearing = higher score
+export const calculateScore = (data: Datapoint[]): number => {
+  if (!data || data.length === 0) return 0
+  
+  const allValues = data.flatMap(d => [d.right, d.left])
+  const avgVolume = allValues.reduce((sum, v) => sum + v, 0) / allValues.length
+  
+  // Invert: 0% volume needed = 100 score, 100% volume needed = 0 score
+  return Math.round(100 - avgVolume)
+}
+
+// Get score label and color based on score value
+export const getScoreInfo = (score: number): { label: string; colorClass: string } => {
+  if (score >= 90) return { label: 'Excellent', colorClass: 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30' }
+  if (score >= 75) return { label: 'Good', colorClass: 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30' }
+  if (score >= 60) return { label: 'Fair', colorClass: 'text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30' }
+  if (score >= 40) return { label: 'Below Average', colorClass: 'text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30' }
+  return { label: 'Poor', colorClass: 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30' }
+}
+
 const STORAGE_KEY = 'hearing-test-history'
 
 export const saveResult = (data: Datapoint[], audioLevel?: number): SavedResult => {
@@ -122,6 +144,8 @@ const HelpIcon = () => (
 
 const Results = (props: { data: Datapoint[]; date?: string; audioLevel?: number; onBack?: () => void }) => {
   const { innerHeight: height } = window
+  const score = calculateScore(props.data)
+  const scoreInfo = getScoreInfo(score)
   
   return (
     <div className="results-container space-y-6">
@@ -145,6 +169,9 @@ const Results = (props: { data: Datapoint[]; date?: string; audioLevel?: number;
             {new Date(props.date).toLocaleString()}
           </span>
         )}
+        <span className={`px-3 py-1 rounded-full text-sm font-bold ${scoreInfo.colorClass}`}>
+          🎯 Score: {score} ({scoreInfo.label})
+        </span>
         {props.audioLevel !== undefined && (
           <span className="px-3 py-1 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded-full text-sm font-semibold">
             🔊 System Volume: {props.audioLevel}%

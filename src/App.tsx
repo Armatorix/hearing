@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import Hearing from './Hearing'
-import Results, { Datapoint, SavedResult, saveResult, getHistory, clearHistory, deleteResult, exportHistory, importHistory } from './Results'
+import Results, { Datapoint, SavedResult, saveResult, getHistory, clearHistory, deleteResult, exportHistory, importHistory, calculateScore, getScoreInfo } from './Results'
 
 const FREQS = [
   2000, 4000, 6000, 8000, 10000, 12000, 14000, 16000, 18000, 20000, 22000,
@@ -265,6 +265,15 @@ function AppContent() {
                   </div>
                   <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                     <span>{new Date(result.date).toLocaleTimeString()}</span>
+                    {(() => {
+                      const score = calculateScore(result.data)
+                      const scoreInfo = getScoreInfo(score)
+                      return (
+                        <span className={`px-2 py-0.5 rounded text-xs font-bold ${scoreInfo.colorClass}`}>
+                          🎯 {score}
+                        </span>
+                      )
+                    })()}
                     {result.audioLevel !== undefined && (
                       <span className="px-2 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 rounded text-xs font-medium">
                         🔊 {result.audioLevel}%
