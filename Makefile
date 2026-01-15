@@ -1,2 +1,2 @@
 deploy:
-	BUILD_PATH=./docs npm run build
+	BUILD_PATH=./deploy npm run build
